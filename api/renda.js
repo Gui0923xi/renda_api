@@ -6,19 +6,24 @@ module.exports = (req, res) => {
 
         const incomeData = req.body.incomeData;
         if (!incomeData || !Array.isArray(incomeData)) {
-            return res.status(400).json({ message: 'Invalid input format' });
+            return res.status(400).json({ message: 'Invalid input format', receivedData: req.body });
         }
 
         const resultados = { "Abaixo de R$2.800": 0, "Acima de R$2.801": 0 };
 
         // Função para limpar e padronizar valores numéricos
         function limparRenda(renda) {
-            renda = renda.toString().toLowerCase()
-                .replace(/[^\d.,]/g, '') // Remove tudo que não for número, vírgula ou ponto
-                .replace(',', '.'); // Substitui vírgula por ponto para facilitar a conversão
-            
-            let valorNumerico = parseFloat(renda);
-            return isNaN(valorNumerico) ? null : valorNumerico;
+            try {
+                renda = renda.toString().toLowerCase()
+                    .replace(/[^\d.,]/g, '') // Remove tudo que não for número, vírgula ou ponto
+                    .replace(',', '.'); // Substitui vírgula por ponto para facilitar a conversão
+                
+                let valorNumerico = parseFloat(renda);
+                return isNaN(valorNumerico) ? null : valorNumerico;
+            } catch (error) {
+                console.error("Erro ao limpar renda:", renda, error);
+                return null;
+            }
         }
 
         // Processar cada valor e categorizá-lo nas faixas
@@ -40,6 +45,7 @@ module.exports = (req, res) => {
 
         res.json({ processedData, faixaContagem: resultados });
     } catch (error) {
+        console.error("Erro interno no servidor:", error);
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 };
