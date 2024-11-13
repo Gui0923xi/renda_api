@@ -1,12 +1,19 @@
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
     try {
         if (req.method !== 'POST') {
             return res.status(405).json({ message: 'Method Not Allowed' });
         }
 
-        const incomeData = req.body.incomeData;
+        // Parse manual do JSON (para garantir que o Vercel interprete o JSON corretamente)
+        let incomeData;
+        try {
+            incomeData = req.body.incomeData || JSON.parse(req.body).incomeData;
+        } catch (error) {
+            return res.status(400).json({ message: 'Invalid JSON format' });
+        }
+
         if (!incomeData || !Array.isArray(incomeData)) {
-            return res.status(400).json({ message: 'Invalid input format', receivedData: req.body });
+            return res.status(400).json({ message: 'Invalid input format: incomeData missing or not an array' });
         }
 
         const resultados = { "Abaixo de R$2.800": 0, "Acima de R$2.801": 0 };
