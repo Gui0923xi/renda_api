@@ -1,0 +1,12 @@
+{
+  "name": "renda-api",
+  "version": "1.0.0",
+  "description": "API para limpeza e categorização de renda",
+  "main": "api.js",
+  "scripts": {
+    "start": "node api.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
