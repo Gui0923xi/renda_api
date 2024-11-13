@@ -1,18 +1,30 @@
 module.exports = (req, res) => {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
+    try {
+        if (req.method !== 'POST') {
+            return res.status(405).json({ message: 'Method Not Allowed' });
+        }
+
+        const incomeData = req.body.incomeData;
+        if (!incomeData || !Array.isArray(incomeData)) {
+            return res.status(400).json({ message: 'Invalid input format' });
+        }
+
+        const processedData = incomeData.map(income => {
+            let renda = income.toString().replace(/[^\d.,]/g, '').replace(',', '.');
+            let valorNumerico = parseFloat(renda);
+
+            if (isNaN(valorNumerico)) return "N/A";
+            return valorNumerico <= 2800 ? "Abaixo de R$2.800" : "Acima de R$2.801";
+        });
+
+        // Contagem de cada faixa
+        const faixaContagem = processedData.reduce((acc, faixa) => {
+            acc[faixa] = (acc[faixa] || 0) + 1;
+            return acc;
+        }, {});
+
+        res.json({ processedData, faixaContagem });
+    } catch (error) {
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-
-    const incomeData = req.body.incomeData || [];
-    const processedData = incomeData.map(income => {
-        let renda = income.toString().replace(/[^\d.,]/g, '').replace(',', '.');
-        let valorNumerico = parseFloat(renda);
-        if (isNaN(valorNumerico)) return "N/A";
-        if (valorNumerico <= 1000) return "0-1000";
-        if (valorNumerico <= 3000) return "1001-3000";
-        if (valorNumerico <= 5000) return "3001-5000";
-        return "5001-10000";
-    });
-
-    res.json({ processedData });
 };
